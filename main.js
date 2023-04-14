@@ -88,19 +88,14 @@ np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
 		'upd': upd, 'drw': drw, 
 });
 
-//mr = (px, py, pvy) => np(x=px, y=py, vy=pvy, c='I',upd=[mbu(cv, est)]);
-mr = (px, py, pvy) => np({x:px, y:py, vy:pvy, c:'I', upd:[v, g, dre]});
-
-mr2 = (px, pvy, pl) => np({x:px, y:0, vy:pvy, c:'!', upd:[v, g, dre]});
+mr = (px, pvy, pl) => np({x:px, y:0, vy:pvy, c:'!', upd:[v, g, dre]});
 
 party = (p) => {
-	if(!p.t) p.t = ctime;
 	if(Math.random()>3/(ctime - p.t + 1)) {
 		p.t = ctime;
-		nv.push(mr((Math.random()*(0.66)+0.16)*sizes.w, 0, 30*(Math.random()*0.3 + 0.7)));
+		nv.push(mr((Math.random()*(0.66)+0.16)*sizes.w, 30*(Math.random()*0.3 + 0.7)));
 	}
 };
-manager = np({upd:[party], drw:[]});
 
 //==================================
 
@@ -119,6 +114,7 @@ function draw() {
 }
 
 function start() {
+	manager = np({t:time(), upd:[party], drw:[]});
 	nv.push(manager);
 }
 
