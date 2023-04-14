@@ -4,7 +4,7 @@ var sizes;
 var ptime;
 var ctime;
 var delta;
-var stop = false;
+var stop;
 
 var screen;
 
@@ -130,8 +130,9 @@ function resume() {
 }
 
 function loop() {
-	delta = time() - ptime;
-	ptime = time();
+	var t = time();
+	delta = t - ptime;
+	ptime = t;
 	ctime += delta;
 
 	update();
