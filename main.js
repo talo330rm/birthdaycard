@@ -11,6 +11,25 @@ var screen;
 
 //==================================
 
+/*
+prefixes
+-----------
+m -> make
+c -> check
+t -> time
+h -> height
+v -> velocity
+g -> acceleration
+p -> particle
+n -> new
+e -> explosion -> create a new array of particle to add to concat
+nop -> no op
+
+mbu -> make -> if condition are met, explode: life = 0, exp()
+
+st -> stroboscopic
+*/
+
 nv = []
 pv = []
 
@@ -22,52 +41,44 @@ g = (p) => p.vy -= 2*delta;
 
 cv = (p) => p.vy <= 0;
 
-estp = (px, py, pc) => np(x=px, y=py, c=pc, upd=[v, mbu(mct(0.3), nop)]);
+pest = (px, py, pc) => np(x=px, y=py, c=pc, upd=[v, mbu(mct(0.3), nop)]);
 
 function est(p) {
 	var ps = []
 	for(i=0; i < 10; i++) {
-		pi = estp(p.x, p.y, p.c, )
+		pi = pest(p.x, p.y, p.c);
 		ps.push(pi);
 	}
 	return ps;
 }
 
+mch = (h) => (p) => p.y > h;
+
 mct = (t) => (p) => ctime - p.t >= t;
 
 me = (exp) => (p) => {nv.concat(exp(p));};
 
-function mbu(cond, exp) {
-	return (p) => {
-		if(cond(p)) {
-			p.l = false;
-			exp(p);
-		}
-	};
-}
+mbu = (cond, exp) => (p) => {
+	if(cond(p)) {
+		p.l = false;
+		exp(p);
+	}
+};
 
-mbu = (cond, exp) => 
+dp = (p) => {paint(e.x, e.y, e.c);};
 
-function dp(e) {
-	paint(e.x, e.y, e.c);
-}
-
-function np(x=0,y=0,c='x',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[]) {
-	return {
+np = (x=0,y=0,c='x',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[]) => {
 		'x':x, 'y':y,
 		'vx':vx, 'vy':vy, 
 		'c':c, 'l':l, 't':t, 
 		'upd': upd, 'drw': drw
-	};
-}
+};
 
+mr = () => np(c='I',upd[]);
 
-ini = false;
-manager = np(upd=[
+manager = np(c = '.', upd=[
 	(p) => {
-		if(!ini) return;
-		ini = true;
-		
+		p.l = false;
 	}
 ]);
 
@@ -139,6 +150,8 @@ function init() {
 	window.addEventListener('resize', resizeCanvas, false);
 	
 	resizeCanvas();
+
+	nv.push(manager);
 
 	requestAnimationFrame(loop);
 }
