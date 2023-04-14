@@ -12,6 +12,7 @@ var screen;
 //==================================
 Array.prototype.random = function() {return this[Math.floor(Math.random()*this.length)];};
 
+time = () => Date.now()*0.001;
 range = (i) => ({
 	[Symbol.iterator]() {
 		let s = 0;
@@ -53,21 +54,7 @@ cav = (p) => p.vx*p.vx + p.vy*p.vy < 0.3;
 pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*Math.cos(th), vy:pva*Math.sin(th), c:pc, upd:[v, delout, drg, mbu(cav, nop)]});
 mcl = (...cond) => (p) => cond.some((f) => f(p));
 delout = (p) => p.l = !cpos(p);
-
-mdexp = (tot) => (p) => {ps = []; for(let i of range(tot)){ps.push(pest(p.x, p.y, 20*(Math.random()*0.8+0.2), Math.PI*2/tot*2, ['*','.'].random()))}};
-
-function est(p) {
-	var ps = [];
-	var th = 0;
-	var tot = 40;
-	for(i=0; i < tot; i++) {
-		th += 2*Math.PI * 2 / tot;
-		pi = pest(p.x, p.y, 20*(Math.random()*0.8+0.2), th, ['*','.'].random());
-		ps.push(pi);
-	}
-	return ps;
-}
-
+mdexp = (tot) => (p) => {ps = []; for(let i of range(tot)){ps.push(pest(p.x, p.y, 20*(Math.random()*0.8+0.2), Math.PI*2/tot*2*i, ['*','.'].random()))} return ps;};
 monce = (u) => (p) => {p.l = false; u(p);};
 mch = (h) => (p) => p.y > h;
 mct = (t) => (p) => ctime - p.t >= t;
@@ -81,7 +68,7 @@ np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
 		'upd': upd, 'drw': drw, 
 });
 
-dre = mbu(cv, me(est));
+dre = mbu(cv, me(mdexp(40)));
 
 mr = (px, pvy, pl) => np({x:px, y:0, vy:pvy, c:'!', upd:[v, g, dre]});
 party = (p) => {
@@ -93,32 +80,27 @@ party = (p) => {
 };
 
 //==================================
-
 function update() {
-	pv = [...pv, ...nv];
-	nv = [];
-	for(const e of pv) 
+	pv = [...pv, ...nv]; nv = [];
+	for(e of pv) 
 		for(u of e.upd) u(e);
 	pv = pv.filter((e) => e.l);
 }
 
 function draw() {
 	clear(' ');
-	for(const e of pv) 
+	for(e of pv) 
 		for(u of e.drw) u(e);
 }
 
-function start() {
+function astart() {
 	manager = np({t:time(), upd:[party], drw:[]});
 	nv.push(manager);
 }
 
 //==================================
-
 function paint(x, y, c) {
-	x = Math.floor(x);
-	y = Math.floor(y/2);
-	screen[x + y*(sizes.w+1)] = c;
+	screen[Math.floor(x) + Math.floor(y/2)*(sizes.w+1)] = c;
 }
 
 function clear(s) {
@@ -130,6 +112,11 @@ function clear(s) {
 function render() {
 	draw();
 	dv.innerHTML = screen.join("");
+}
+
+function start() {
+	astart();
+	requestAnimationFrame(loop);
 }
 
 function loop() {
@@ -153,8 +140,6 @@ function resizeCanvas() {
 	};
 
 	screen = new Array((sizes.w+1)*sizes.h);
-
-	if(stop) render();
 }
 
 function init() {
@@ -165,10 +150,7 @@ function init() {
 	window.addEventListener('resize', resizeCanvas, false);
 	
 	resizeCanvas();
-
 	start();
-
-	requestAnimationFrame(loop);
 }
 
 function keydown(e) {
@@ -176,10 +158,6 @@ function keydown(e) {
 		stop = !stop;
 		if(!stop) requestAnimationFrame(loop);
 	}
-}
-
-function time() {
-	return Date.now()*0.001;
 }
 
 window.onload = init;
