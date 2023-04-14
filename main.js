@@ -1,9 +1,7 @@
 var dv;
 var sizes;
 
-var ptime;
 var ctime;
-var stime;
 var delta;
 var stop = false;
 
@@ -116,13 +114,22 @@ function render() {
 
 function start() {
 	astart();
+	resume();
+}
+
+function pause() {
+	stop = true;
+}
+
+function resume() {
+	ctime = time();
+	stop = false;
 	requestAnimationFrame(loop);
 }
 
 function loop() {
-	ctime = time() - stime;
-	delta = ctime - ptime;
-	ptime = ctime;
+	delta = time() - ctime;
+	ctime += delta;
 
 	update();
 	render();
@@ -154,10 +161,8 @@ function init() {
 }
 
 function keydown(e) {
-	if(e.key===' ') {
-		stop = !stop;
-		if(!stop) requestAnimationFrame(loop);
-	}
+	if(e.key===' ') 
+		if(stop) resume(); else pause();
 }
 
 window.onload = init;
