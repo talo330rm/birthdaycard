@@ -1,6 +1,7 @@
 var dv;
 var sizes;
 
+var ptime;
 var ctime;
 var delta;
 var stop = false;
@@ -92,7 +93,7 @@ function draw() {
 }
 
 function astart() {
-	manager = np({t:time(), upd:[party], drw:[]});
+	manager = np({upd:[party], drw:[]});
 	nv.push(manager);
 }
 
@@ -113,8 +114,9 @@ function render() {
 }
 
 function start() {
-	astart();
+	ctime = 0;
 	resume();
+	astart();
 }
 
 function pause() {
@@ -122,13 +124,14 @@ function pause() {
 }
 
 function resume() {
-	ctime = time();
+	ptime = time();
 	stop = false;
 	requestAnimationFrame(loop);
 }
 
 function loop() {
-	delta = time() - ctime;
+	delta = time() - ptime;
+	ptime = time();
 	ctime += delta;
 
 	update();
