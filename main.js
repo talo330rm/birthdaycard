@@ -35,9 +35,7 @@ function est(p) {
 
 mct = (t) => (p) => ctime - p.t >= t;
 
-function me(exp) {
-	return (p) => {nv.concat(exp(p));};
-}
+me = (exp) => (p) => {nv.concat(exp(p));};
 
 function mbu(cond, exp) {
 	return (p) => {
@@ -47,6 +45,8 @@ function mbu(cond, exp) {
 		}
 	};
 }
+
+mbu = (cond, exp) => 
 
 function dp(e) {
 	paint(e.x, e.y, e.c);
