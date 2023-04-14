@@ -14,44 +14,33 @@ var screen;
 nv = []
 pv = []
 
-function nop(p) {}
+nop = (p) => {};
 
-function v(p) {
-	p.x += p.vx*delta;
-	p.y += p.vy*delta;
-}
+v = (p) => {p.x += p.vx*delta; p.y += p.vy*delta;}
 
-function g(p) {
-	p.vy -= 2*delta;
-}
+g = (p) => p.vy -= 2*delta;
 
-function cv(p) {
-	return p.vy <= 0;
-}
+cv = (p) => p.vy <= 0;
 
-function estp(x, y, ch, lt) {
-	return np(x=p.x, y=p.y, c=ch, upd=[v, mbu(mct(0.3), nop)])
-}
+estp = (px, py, pc) => np(x=px, y=py, c=pc, upd=[v, mbu(mct(0.3), nop)]);
 
 function est(p) {
 	var ps = []
 	for(i=0; i < 10; i++) {
-		pi = estp(p, )
+		pi = estp(p.x, p.y, p.c, )
 		ps.push(pi);
 	}
 	return ps;
 }
 
-function mct(t) {
-	return function(p) {return ctime - p.t >= t;};
-}
+mct = (t) => (p) => ctime - p.t >= t;
 
 function me(exp) {
-	return function(p) {nv.concat(exp(p));};
+	return (p) => {nv.concat(exp(p));};
 }
 
 function mbu(cond, exp) {
-	return function(p) {
+	return (p) => {
 		if(cond(p)) {
 			p.l = false;
 			exp(p);
@@ -71,6 +60,16 @@ function np(x=0,y=0,c='x',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[]) {
 		'upd': upd, 'drw': drw
 	};
 }
+
+
+ini = false;
+manager = np(upd=[
+	(p) => {
+		if(!ini) return;
+		ini = true;
+		
+	}
+]);
 
 //==================================
 
@@ -112,7 +111,8 @@ function loop() {
 	delta = ctime - ptime;
 	ptime = ctime;
 
-	render()
+	update();
+	render();
 
 	if(!stop) requestAnimationFrame(loop);
 }
@@ -139,6 +139,7 @@ function init() {
 	window.addEventListener('resize', resizeCanvas, false);
 	
 	resizeCanvas();
+
 	requestAnimationFrame(loop);
 }
 
