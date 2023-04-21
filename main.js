@@ -66,7 +66,6 @@ np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
 		'upd': upd, 'drw': drw, 
 });
 
-dre = mbu(cv, mdexp(40));
 mpexp = (pc) => {for(let i of range(tot)) nv.push(pc(i));};
 
 //== normal
@@ -75,11 +74,11 @@ pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*Math.cos(th), vy:pva*Math
 mdexp = (tot) => (p) => {for(let i of range(tot)) nv.push(pest(p.x, p.y, 20*(Math.random()*0.8+0.2), Math.PI*2/tot*2*i, ['*','.'].random()));};
 mr = (px, pvy, pl) => np({x:px, y:0, vy:pvy, c:'!', upd:[v, g, dre]});
 
+dre = mbu(cv, mdexp(40));
 //== filament
-fexp = 
-fil = (u) => {lpos = u.y; (p) => {if(floor(p.y) != floor(lpos)) {make(mfp1(p));lpos = p.y;};};
+fil = (u) => {lpos = u.y; (p) => {if(floor(p.y) != floor(lpos)) {make(mfp1(p));lpos = p.y;};};};
 mfp0 = (px, py, pvx, pvy) => np({c:'*',upd:[v,g,drg,fil,delout]});
-mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd[delout, mbu(mct(0.5, nop))]});
+mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd:[delout, mbu(mct(0.5, nop))]});
 
 //== manager
 party = (p) => {
