@@ -122,7 +122,7 @@ function clear(s) {
 
 function render() {
 	draw();
-	cvs.fillText(screen, 0, 0);
+	ctx.fillText(screen, 10, 10);
 }
 
 function start() {
@@ -137,7 +137,7 @@ function pause() {
 
 function resume() {
 	ptime = time();
-	stop = false;
+	stop = true;
 	requestAnimationFrame(loop);
 }
 
@@ -154,10 +154,11 @@ function loop() {
 }
 
 function resizeCanvas() {
-	//var style = window.getComputedStyle(dv, null).getPropertyValue('font-size');
+	var style = window.getComputedStyle(cvs, null).getPropertyValue('font-size');
 	var fontSize = parseFloat(style);
 	ctx = cvs.getContext("2d");
 	ctx.font = "14px monospace";
+	ctx.fillStyle = "#FFFFFF";
 
 	sizes = {
 		'w':Math.floor(cvs.clientWidth/fontSize), 

@@ -1,13 +1,13 @@
 *{font-family: monospace;}
 
 html, body {
+	width: 100%;
 	height: 100%;
 	margin: 0;
 	overflow: hidden;
 }
 
 canvas#c {
-	width: 100%;
 	height: 100%;
 	overflow: hidden;
 	overflow-wrap: break-word;
@@ -16,6 +16,6 @@ canvas#c {
 	line-height: 1;
 	font-size: 14px;
 	position: absolute;
-	background-color: black;
+	background-color: gray;
 	color: white;	
 }
