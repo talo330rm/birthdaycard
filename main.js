@@ -15,7 +15,7 @@ time = () => Date.now()*0.001;
 range = (i) => ({
 	[Symbol.iterator]() {
 		let s = 0;
-		return {next() {return s < i ? {value:s++,done:false} : {done:true};}};
+		return {next() {return {value:s++, done:s>=i};}};
 	}
 });
 
@@ -44,20 +44,19 @@ nv = [];
 pv = [];
 
 nop = (p) => {};
+make = (p) => {nv.push(p);};
 v = (p) => {p.x += p.vx*delta; p.y += p.vy*delta;}
 drg = (p) => {av = Math.sqrt(p.vx*p.vx + p.vy*p.vy)*0.7*delta; p.vx -= Math.sign(p.vx)*av; p.vy -= Math.sign(p.vy)*av;};
+hdrg = (p) => {p.vx -= Math.sign(p.vx)*p.vx*delta*0.7;};
 g = (p) => p.vy -= 40*delta;
 cv = (p) => p.vy <= 0;
 cpos = (p) => p.x < 0 || p.x >= sizes.w || p.y < 0 || p.y > sizes.h;
 cav = (p) => p.vx*p.vx + p.vy*p.vy < 0.3;
-pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*Math.cos(th), vy:pva*Math.sin(th), c:pc, upd:[v, delout, drg, mbu(cav, nop)]});
 mcl = (...cond) => (p) => cond.some((f) => f(p));
 delout = (p) => p.l = !cpos(p);
-mdexp = (tot) => (p) => {ps = []; for(let i of range(tot)){ps.push(pest(p.x, p.y, 20*(Math.random()*0.8+0.2), Math.PI*2/tot*2*i, ['*','.'].random()))} return ps;};
 monce = (u) => (p) => {p.l = false; u(p);};
 mch = (h) => (p) => p.y > h;
 mct = (t) => (p) => ctime - p.t >= t;
-me = (exp) => (p) => {nv = nv.concat(exp(p));};
 mbu = (cond, exp) => (p) => {if(cond(p)) {p.l = false; exp(p);}};
 dp = (p) => {paint(p.x, sizes.h-p.y, p.c);};
 np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
@@ -67,9 +66,22 @@ np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
 		'upd': upd, 'drw': drw, 
 });
 
-dre = mbu(cv, me(mdexp(40)));
+dre = mbu(cv, mdexp(40));
+mpexp = (pc) => {for(let i of range(tot)) nv.push(pc(i));};
 
+//== normal
+npupd = [v, delout, drg, mbu(cav, nop)];
+pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*Math.cos(th), vy:pva*Math.sin(th), c:pc, upd:npupd});
+mdexp = (tot) => (p) => {for(let i of range(tot)) nv.push(pest(p.x, p.y, 20*(Math.random()*0.8+0.2), Math.PI*2/tot*2*i, ['*','.'].random()));};
 mr = (px, pvy, pl) => np({x:px, y:0, vy:pvy, c:'!', upd:[v, g, dre]});
+
+//== filament
+fexp = 
+fil = (u) => {lpos = u.y; (p) => {if(floor(p.y) != floor(lpos)) {make(mfp1(p));lpos = p.y;};};
+mfp0 = (px, py, pvx, pvy) => np({c:'*',upd:[v,g,drg,fil,delout]});
+mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd[delout, mbu(mct(0.5, nop))]});
+
+//== manager
 party = (p) => {
 	if(Math.random()>3/(ctime - p.t + 1)) {
 		p.t = ctime;
