@@ -160,6 +160,9 @@ function resizeCanvas() {
 	ctx.font = "14px monospace";
 	ctx.fillStyle = "#FFFFFF";
 
+	ctx.canvas.width = window.innerWidth;
+	ctx.canvas.height = window.innerHeight;
+
 	sizes = {
 		'w':Math.floor(cvs.clientWidth/fontSize), 
 		'h':Math.floor(cvs.clientHeight/fontSize*2)
@@ -176,6 +179,7 @@ function init() {
 	window.addEventListener('resize', resizeCanvas, false);
 	
 	resizeCanvas();
+
 	start();
 }
 
