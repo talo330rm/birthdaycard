@@ -1,4 +1,4 @@
-var dv;
+var cvs;
 var sizes;
 
 var ptime;
@@ -7,6 +7,7 @@ var delta;
 var stop;
 
 var screen;
+var ctx;
 
 //==================================
 Array.prototype.random = function() {return this[Math.floor(Math.random()*this.length)];};
@@ -121,7 +122,7 @@ function clear(s) {
 
 function render() {
 	draw();
-	dv.innerHTML = screen.join("");
+	cvs.fillText(screen, 0, 0);
 }
 
 function start() {
@@ -153,19 +154,21 @@ function loop() {
 }
 
 function resizeCanvas() {
-	var style = window.getComputedStyle(dv, null).getPropertyValue('font-size');
+	//var style = window.getComputedStyle(dv, null).getPropertyValue('font-size');
 	var fontSize = parseFloat(style);
+	ctx = cvs.getContext("2d");
+	ctx.font = "14px monospace";
 
 	sizes = {
-		'w':Math.floor(dv.clientWidth/fontSize), 
-		'h':Math.floor(dv.clientHeight/fontSize*2)
+		'w':Math.floor(cvs.clientWidth/fontSize), 
+		'h':Math.floor(cvs.clientHeight/fontSize*2)
 	};
 
 	screen = new Array((sizes.w+1)*sizes.h);
 }
 
 function init() {
-	dv = document.getElementById("c");
+	cvs = document.getElementById("c");
 	stime = time();
 
 	window.addEventListener('keydown', keydown, false);

@@ -6,7 +6,7 @@ html, body {
 	overflow: hidden;
 }
 
-div#c {
+canvas#c {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
@@ -17,5 +17,5 @@ div#c {
 	font-size: 14px;
 	position: absolute;
 	background-color: black;
-	color: white;
+	color: white;	
 }
