@@ -5,7 +5,7 @@ var ctime;
 var delta;
 var stop;
 
-var cvs = {
+const cvs = {
 	w: 0,
 	h: 0,
 	v: [],
@@ -26,7 +26,6 @@ var cvs = {
 //==================================
 Array.prototype.random = function() {return this[Math.floor(Math.random()*this.length)];};
 
-iff = (c, v, f) => {if(c) v(); else f();};
 time = () => Date.now()*0.001;
 range = (i) => ({
 	[Symbol.iterator]() {
@@ -36,25 +35,6 @@ range = (i) => ({
 });
 
 //==================================
-
-/*
-prefixes
------------
-m -> make
-c -> check
-t -> time
-h -> height
-v -> velocity
-g -> acceleration
-p -> particle
-n -> new
-e -> explosion -> create a new array of particle to add to concat
-nop -> no op
-
-mbu -> make -> if condition are met, explode: life = 0, exp()
-
-st -> stroboscopic
-*/
 
 nv = [];
 pv = [];
@@ -112,7 +92,7 @@ dparty = (p) => {clear(' ');};
 function update() {
 	pv = pv.concat(nv); nv = [];
 	for(let e of pv) 
-		for(u of e.upd) u(e);
+		for(let u of e.upd) u(e);
 	pv = pv.filter((e) => e.l);
 }
 
