@@ -1,16 +1,32 @@
 var dv;
-var sizes;
 
 var ptime;
 var ctime;
 var delta;
 var stop;
 
-var screen;
+var cvs = {
+	w: 0,
+	h: 0,
+	v: [],
+	clear: (c) => {
+		cvs.v.fill(c); 
+		for(let i = 1; i <= cvs.h; i++) cvs.v[i*(cvs.w+1) - 1] = '\n';
+	},
+	paint: (x, y, c) => {
+		cvs.v[Math.floor(x) + Math.floor(cvs.h - y/2)*(cvs.w+1)] = c;
+	},
+	resize: (w, h) => {
+		cvs.w = Math.floor(w);
+		cvs.h = Math.floor(h);
+		cvs.v = new Array((cvs.w+1)*cvs.h);
+	}
+};
 
 //==================================
 Array.prototype.random = function() {return this[Math.floor(Math.random()*this.length)];};
 
+iff = (c, v, f) => {if(c) v(); else f();};
 time = () => Date.now()*0.001;
 range = (i) => ({
 	[Symbol.iterator]() {
@@ -51,7 +67,7 @@ hdrg = (p) => {p.vx -= Math.sign(p.vx)*p.vx*delta*0.7;};
 g = (p) => p.vy -= 40*delta;
 mg = (c) => (p) => p.vy -= c*delta;
 cv = (p) => p.vy <= 0;
-cpos = (p) => p.x < 0 || p.x >= sizes.w || p.y < 0 || p.y >= sizes.h*2;
+cpos = (p) => p.x < 0 || p.x >= cvs.w || p.y < 0 || p.y >= cvs.h*2;
 cav = (p) => p.vx*p.vx + p.vy*p.vy < 0.3;
 mcl = (...cond) => (p) => cond.some((f) => f(p));
 delout = (p) => p.l = !cpos(p);
@@ -85,7 +101,7 @@ mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd:[delout, mbu(mct(0.5, nop
 uparty = (p) => {
 	if(Math.random()>3/(ctime - p.t + 1)) {
 		p.t = ctime;
-		let r = mr((Math.random()*(0.66)+0.16)*sizes.w, 80*(Math.random()*0.3 + 0.7));
+		let r = mr((Math.random()*(0.66)+0.16)*cvs.w, 80*(Math.random()*0.3 + 0.7));
 		nv.push(r);
 	}
 };
@@ -112,18 +128,18 @@ function astart() {
 
 //==================================
 function paint(x, y, c) {
-	screen[Math.floor(x) + Math.floor(sizes.h - y/2)*(sizes.w+1)] = c;
+	cvs.v[Math.floor(x) + Math.floor(cvs.h - y/2)*(cvs.w+1)] = c;
 }
 
 function clear(s) {
-	screen.fill(s);
-	for(let i = 1; i <= sizes.h; i++)
-		screen[i*(sizes.w+1) - 1] = '\n';
+	cvs.v.fill(s);
+	for(let i = 1; i <= cvs.h; i++)
+		cvs.v[i*(cvs.w+1) - 1] = '\n';
 }
 
 function render() {
 	draw();
-	dv.innerHTML = screen.join("");
+	dv.innerHTML = cvs.v.join("");
 }
 
 function start() {
@@ -158,13 +174,10 @@ function resizeCanvas() {
 	var style = window.getComputedStyle(dv, null).getPropertyValue('font-size');
 	var fontSize = parseFloat(style);
 
-	sizes = {
-		'w':Math.floor(dv.clientWidth/fontSize), 
-		'h':Math.floor(dv.clientHeight/fontSize)
-	};
-
-	screen = new Array((sizes.w+1)*sizes.h);
+	cvs.resize(Math.floor(dv.clientWidth/fontSize), Math.floor(dv.clientHeight/fontSize));
 }
+
+keydown = (e) => {(e.key === ' ' ? (stop ? resume : pause) : () => {})()};
 
 function init() {
 	dv = document.getElementById("c");
@@ -175,11 +188,6 @@ function init() {
 	
 	resizeCanvas();
 	start();
-}
-
-function keydown(e) {
-	if(e.key===' ') 
-		if(stop) resume(); else pause();
 }
 
 window.onload = init;
