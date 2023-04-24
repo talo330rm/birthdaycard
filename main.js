@@ -76,7 +76,6 @@ mpkg = (...f) => (p) => {for(let fi of f) fi(p);};
 mpexp = (pc) => {for(let i of range(tot)) nv.push(pc(i));};
 
 
-
 //== normal
 npupd = [v, delout, drg, mbu(cav, nop)];
 pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*cos(th), vy:pva*sin(th), c:pc, upd:npupd});
@@ -161,7 +160,7 @@ function resizeCanvas() {
 	let style = window.getComputedStyle(dv, null).getPropertyValue('font-size');
 	let fontSize = parseFloat(style);
 
-	cvs.resize(floor(dv.clientWidth/fontSize), floor(dv.clientHeight/fontSize));
+	cvs.resize(floor(dv.clientWidth*5/3/fontSize), floor(dv.clientHeight/fontSize));
 }
 
 const keydown = (e) => {(e.key === ' ' ? (running ? pause : resume) : () => {})()};
