@@ -97,7 +97,7 @@ mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd:[delout, mbu(mct(0.5, nop
 uparty = (p) => {
 	if(rnd()>3/(ctime - p.t + 1)) {
 		p.t = ctime;
-		let r = mr(rndI(0.16, 0.83)*cvs.w, sqrt(80*cvs.h)*rndI(0.3, 1.0));
+		let r = mr(rndI(0.16, 0.83)*cvs.w, sqrt(80*cvs.h)*rndI(0.7, 1.0));
 		nv.push(r);
 	}
 };
