@@ -1,9 +1,29 @@
-var dv;
 
+//==================================
+const rnd = Math.random;
+const floor = Math.floor;
+const sqrt = Math.sqrt;
+const sgn = Math.sign;
+const cos = Math.cos;
+const sin = Math.sin;
+const PI = Math.PI;
+
+Array.prototype.random = function() {return this[floor(rnd()*this.length)];};
+
+const time = () => Date.now()*0.001;
+const range = (end, start=0, step=1) => ({
+	[Symbol.iterator]() {
+		let s = start;
+		return {next() {let k = s; s+=step; return {value:k, done:k>=end};}};
+	}
+});
+
+//==================================
+var dv;
 var ptime;
 var ctime;
 var delta;
-var stop;
+var running;
 
 const cvs = {
 	w: 0,
@@ -14,36 +34,24 @@ const cvs = {
 		for(let i = 1; i <= cvs.h; i++) cvs.v[i*(cvs.w+1) - 1] = '\n';
 	},
 	paint: (x, y, c) => {
-		cvs.v[Math.floor(x) + Math.floor(cvs.h - y/2)*(cvs.w+1)] = c;
+		cvs.v[floor(x) + floor(cvs.h - y/2)*(cvs.w+1)] = c;
 	},
 	resize: (w, h) => {
-		cvs.w = Math.floor(w);
-		cvs.h = Math.floor(h);
+		cvs.w = floor(w);
+		cvs.h = floor(h);
 		cvs.v = new Array((cvs.w+1)*cvs.h);
 	}
 };
 
 //==================================
-Array.prototype.random = function() {return this[Math.floor(Math.random()*this.length)];};
-
-time = () => Date.now()*0.001;
-range = (i) => ({
-	[Symbol.iterator]() {
-		let s = 0;
-		return {next() {return {value:s++, done:s>=i};}};
-	}
-});
-
-//==================================
-
 nv = [];
 pv = [];
 
 nop = (p) => {};
 make = (p) => {nv.push(p);};
 v = (p) => {p.x += p.vx*delta; p.y += p.vy*delta;}
-drg = (p) => {let av = Math.sqrt(p.vx*p.vx + p.vy*p.vy)*0.7*delta; p.vx -= Math.sign(p.vx)*av; p.vy -= Math.sign(p.vy)*av;};
-hdrg = (p) => {p.vx -= Math.sign(p.vx)*p.vx*delta*0.7;};
+drg = (p) => {let av = sqrt(p.vx*p.vx + p.vy*p.vy)*0.7*delta; p.vx -= sgn(p.vx)*av; p.vy -= sgn(p.vy)*av;};
+hdrg = (p) => {p.vx -= sgn(p.vx)*p.vx*delta*0.7;};
 g = (p) => p.vy -= 40*delta;
 mg = (c) => (p) => p.vy -= c*delta;
 cv = (p) => p.vy <= 0;
@@ -55,7 +63,7 @@ monce = (u) => (p) => {p.l = false; u(p);};
 mch = (h) => (p) => p.y > h;
 mct = (t) => (p) => ctime - p.t >= t;
 mbu = (cond, exp) => (p) => {if(cond(p)) {p.l = false; exp(p);}};
-dp = (p) => {paint(p.x, p.y, p.c);};
+dp = (p) => {cvs.paint(p.x, p.y, p.c);};
 np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
 		'x':x, 'y':y,
 		'vx':vx, 'vy':vy, 
@@ -63,12 +71,16 @@ np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
 		'upd': upd, 'drw': drw, 
 });
 
+mpkg = (...f) => (p) => {for(let fi of f) fi(p);};
+
 mpexp = (pc) => {for(let i of range(tot)) nv.push(pc(i));};
+
+
 
 //== normal
 npupd = [v, delout, drg, mbu(cav, nop)];
-pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*Math.cos(th), vy:pva*Math.sin(th), c:pc, upd:npupd});
-mdexp = (tot) => (p) => {for(let i of range(tot)) nv.push(pest(p.x, p.y, 30*(Math.random()*0.8+0.2), Math.PI*2/tot*2*i, ['*','.'].random()));};
+pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*cos(th), vy:pva*sin(th), c:pc, upd:npupd});
+mdexp = (tot) => (p) => {let vc = ['.','*'];for(let i of range(tot)) nv.push(pest(p.x, p.y, 30*(rnd()*0.8+0.2), PI*2/tot*2*i, vc.random()));};
 mr = (px, pvy, pl) => np({x:px, y:0, vy:pvy, c:'.', upd:[v, g, dre]});
 
 dre = mbu(cv, mdexp(60));
@@ -77,20 +89,24 @@ fil = (u) => {let lpos = u.y; (p) => {if(floor(p.y) != floor(lpos)) {make(mfp1(p
 mfp0 = (px, py, pvx, pvy) => np({c:'*',upd:[v,g,drg,fil,delout]});
 mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd:[delout, mbu(mct(0.5, nop))]});
 
+//chain
+
+
+
 //== manager
 uparty = (p) => {
-	if(Math.random()>3/(ctime - p.t + 1)) {
+	if(rnd()>3/(ctime - p.t + 1)) {
 		p.t = ctime;
-		let r = mr((Math.random()*(0.66)+0.16)*cvs.w, 80*(Math.random()*0.3 + 0.7));
+		let r = mr((rnd()*(0.66)+0.16)*cvs.w, 80*(rnd()*0.3 + 0.7));
 		nv.push(r);
 	}
 };
 
-dparty = (p) => {clear(' ');};
+dparty = (p) => {cvs.clear(' ');};
 
 //==================================
 function update() {
-	pv = pv.concat(nv); nv = [];
+	pv = pv.concat(nv); nv.length = 0;
 	for(let e of pv) 
 		for(let u of e.upd) u(e);
 	pv = pv.filter((e) => e.l);
@@ -107,16 +123,6 @@ function astart() {
 }
 
 //==================================
-function paint(x, y, c) {
-	cvs.v[Math.floor(x) + Math.floor(cvs.h - y/2)*(cvs.w+1)] = c;
-}
-
-function clear(s) {
-	cvs.v.fill(s);
-	for(let i = 1; i <= cvs.h; i++)
-		cvs.v[i*(cvs.w+1) - 1] = '\n';
-}
-
 function render() {
 	draw();
 	dv.innerHTML = cvs.v.join("");
@@ -129,17 +135,18 @@ function start() {
 }
 
 function pause() {
-	stop = true;
+	running = false;
 }
 
 function resume() {
+	if(running) return;
 	ptime = time();
-	stop = false;
+	running = true;
 	requestAnimationFrame(loop);
 }
 
 function loop() {
-	var t = time();
+	let t = time();
 	delta = t - ptime;
 	ptime = t;
 	ctime += delta;
@@ -147,21 +154,21 @@ function loop() {
 	update();
 	render();
 
-	if(!stop) requestAnimationFrame(loop);
+	if(running) requestAnimationFrame(loop);
 }
 
 function resizeCanvas() {
-	var style = window.getComputedStyle(dv, null).getPropertyValue('font-size');
-	var fontSize = parseFloat(style);
+	let style = window.getComputedStyle(dv, null).getPropertyValue('font-size');
+	let fontSize = parseFloat(style);
 
-	cvs.resize(Math.floor(dv.clientWidth/fontSize), Math.floor(dv.clientHeight/fontSize));
+	cvs.resize(floor(dv.clientWidth/fontSize), floor(dv.clientHeight/fontSize));
 }
 
-keydown = (e) => {(e.key === ' ' ? (stop ? resume : pause) : () => {})()};
+const keydown = (e) => {(e.key === ' ' ? (running ? pause : resume) : () => {})()};
 
+//==================================
 function init() {
 	dv = document.getElementById("c");
-	stime = time();
 
 	window.addEventListener('keydown', keydown, false);
 	window.addEventListener('resize', resizeCanvas, false);
