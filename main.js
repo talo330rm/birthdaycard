@@ -7,6 +7,7 @@ const sgn = Math.sign;
 const cos = Math.cos;
 const sin = Math.sin;
 const PI = Math.PI;
+const TAU = Math.PI*2;
 
 Array.prototype.random = function() {return this[floor(rnd()*this.length)];};
 
@@ -27,8 +28,7 @@ var delta;
 var running;
 
 const cvs = {
-	w: 0,
-	h: 0,
+	w: 0, h: 0,
 	v: [],
 	clear: (c) => {
 		cvs.v.fill(c); 
@@ -52,19 +52,24 @@ nop = (p) => {};
 make = (p) => {nv.push(p);};
 v = (p) => {p.x += p.vx*delta; p.y += p.vy*delta;}
 drg = (p) => {let dr = 1 - delta*1.1; p.vx *= dr; p.vy *= dr;};
-hdrg = (p) => {p.vx -= sgn(p.vx)*p.vx*delta*0.7;};
+hdrg = (p) => {p.vx *= (1-delta*0.7);};
 g = (p) => p.vy -= 40*delta;
 mg = (c) => (p) => p.vy -= c*delta;
 cv = (p) => p.vy <= 0;
-cpos = (p) => p.x < 0 || p.x >= cvs.w || p.y < 0 || p.y >= cvs.h*2;
+cpos = (p) => p.x < 0 || p.x >= cvs.w || p.y < 0 || p.y >= cvs.h*5/3;
 cav = (p) => p.vx*p.vx + p.vy*p.vy < 0.3;
 mcl = (...cond) => (p) => cond.some((f) => f(p));
 delout = (p) => p.l = !cpos(p);
 monce = (u) => (p) => {p.l = false; u(p);};
 mch = (h) => (p) => p.y > h;
 mct = (t) => (p) => ctime - p.t >= t;
+mdt = (t) => (p) => {p.l = (ctime - p.t) < t;};
+dv = (p) => {p.l = p.vx*p.vx + p.vy*p.vy > 0.3;};
 mbu = (cond, exp) => (p) => {if(cond(p)) {p.l = false; exp(p);}};
 dp = (p) => {cvs.paint(p.x, p.y, p.c);};
+repl = (mp) => (p) => {nv.push(mp(p));};
+mpkg = (...f) => (p) => {for(let fi of f) fi(p);};
+mdpexp = (pc, tot) => (p) => {for(let i of range(tot)) nv.push(pc(p, i));};
 np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
 		'x':x, 'y':y,
 		'vx':vx, 'vy':vy, 
@@ -72,32 +77,53 @@ np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[],drw=[dp]}) => ({
 		'upd': upd, 'drw': drw, 
 });
 
-mpkg = (...f) => (p) => {for(let fi of f) fi(p);};
+vc = ['.'];
 
-mpexp = (pc) => {for(let i of range(tot)) nv.push(pc(i));};
+//== default
+npupd = [v, delout, drg, dv];
+dexp = (p, i) => {
+	let th = TAU*rnd();
+	let pva = 30*rndI(0.2, 1.0);
+	return np({
+		x:p.x, y:p.y, 
+		vx:pva*cos(th), vy:pva*sin(th), 
+		c:vc.random(), upd:npupd
+	});
+};
+dcexp = (rad) => (p, i) => {
+	let th = TAU*rnd();
+	let pva = [rad, rad*2, rad*3].random();
+	return np({
+		x:p.x, y:p.y, 
+		vx:pva*cos(th), vy:pva*sin(th), 
+		c:vc.random(), upd:npupd
+	});
+};
+rdupd = [v, g, mbu(cv, mdpexp(dexp, 40))];
+rdcupd = [v, g, mbu(cv, mdpexp(dcexp(10), 60))];
+mrd = (px, pvy) => np({x:px, vy:pvy, c:'.', upd:rdupd});
 
+//== strobe
+mpst = (p) => {return np({x:p.x, y:p.y, c:'*', upd:[delout,mdt(0.1)]});};
+istexp = (p, i) => {
+	let th = TAU*rnd();
+	let r = 20*rnd(0.5, 1.0);
+	return np({
+		x:p.x+r*cos(th), y:p.y+r*sin(th), 
+		upd:[mbu(mct(rndI(0.2,1.5)), repl(mpst))], 
+		drw:[]
+	});
+};
+rstupd = [v, g, mbu(cv, mdpexp(istexp, 60))];
+mrst = (px, pvy) => np({x:px, vy:pvy, c:'.', upd:rstupd});
 
-//== normal
-npupd = [v, delout, drg, mbu(cav, nop)];
-pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*cos(th), vy:pva*sin(th), c:pc, upd:npupd});
-mdexp = (tot) => (p) => {let vc = ['.','*'];for(let i of range(tot)) nv.push(pest(p.x, p.y, 30*rndI(0.2, 1.0), rnd()*PI*2, vc.random()));};
-mr = (px, pvy, pl) => np({x:px, y:0, vy:pvy, c:'.', upd:[v, g, dre]});
-
-dre = mbu(cv, mdexp(60));
-//== filament
-fil = (u) => {let lpos = u.y; (p) => {if(floor(p.y) != floor(lpos)) {make(mfp1(p));lpos = p.y;};};};
-mfp0 = (px, py, pvx, pvy) => np({c:'*',upd:[v,g,drg,fil,delout]});
-mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd:[delout, mbu(mct(0.5, nop))]});
-
-//== chain
-
-
-
+mrw = (px, pvy, up) => np({x:px, vy:pvy, c:'.', upd:up});
+rkt = [rdupd, rstupd, rdcupd];
 //== manager
 uparty = (p) => {
-	if(rnd()>3/(ctime - p.t + 1)) {
+	if(rnd()>1.8/(ctime - p.t + 1)) {
 		p.t = ctime;
-		let r = mr(rndI(0.16, 0.83)*cvs.w, sqrt(80*cvs.h)*rndI(0.7, 1.0));
+		let r = mrw(rndI(0.16, 0.83)*cvs.w, sqrt(80*cvs.h)*rndI(0.8, 1.2), rkt.random());
 		nv.push(r);
 	}
 };
