@@ -11,6 +11,7 @@ const PI = Math.PI;
 Array.prototype.random = function() {return this[floor(rnd()*this.length)];};
 
 const time = () => Date.now()*0.001;
+const rndI = (min, max) => rnd()*(max-min)+min;
 const range = (end, start=0, step=1) => ({
 	[Symbol.iterator]() {
 		let s = start;
@@ -34,7 +35,7 @@ const cvs = {
 		for(let i = 1; i <= cvs.h; i++) cvs.v[i*(cvs.w+1) - 1] = '\n';
 	},
 	paint: (x, y, c) => {
-		cvs.v[floor(x) + floor(cvs.h - y/2)*(cvs.w+1)] = c;
+		cvs.v[floor(x) + floor(cvs.h - y*3/5)*(cvs.w+1)] = c;
 	},
 	resize: (w, h) => {
 		cvs.w = floor(w);
@@ -50,7 +51,7 @@ pv = [];
 nop = (p) => {};
 make = (p) => {nv.push(p);};
 v = (p) => {p.x += p.vx*delta; p.y += p.vy*delta;}
-drg = (p) => {let av = sqrt(p.vx*p.vx + p.vy*p.vy)*0.7*delta; p.vx -= sgn(p.vx)*av; p.vy -= sgn(p.vy)*av;};
+drg = (p) => {let dr = 1 - delta*1.1; p.vx *= dr; p.vy *= dr;};
 hdrg = (p) => {p.vx -= sgn(p.vx)*p.vx*delta*0.7;};
 g = (p) => p.vy -= 40*delta;
 mg = (c) => (p) => p.vy -= c*delta;
@@ -79,7 +80,7 @@ mpexp = (pc) => {for(let i of range(tot)) nv.push(pc(i));};
 //== normal
 npupd = [v, delout, drg, mbu(cav, nop)];
 pest = (px, py, pva, th, pc) => np({x:px, y:py, vx:pva*cos(th), vy:pva*sin(th), c:pc, upd:npupd});
-mdexp = (tot) => (p) => {let vc = ['.','*'];for(let i of range(tot)) nv.push(pest(p.x, p.y, 30*(rnd()*0.8+0.2), PI*2/tot*2*i, vc.random()));};
+mdexp = (tot) => (p) => {let vc = ['.','*'];for(let i of range(tot)) nv.push(pest(p.x, p.y, 30*rndI(0.2, 1.0), rnd()*PI*2, vc.random()));};
 mr = (px, pvy, pl) => np({x:px, y:0, vy:pvy, c:'.', upd:[v, g, dre]});
 
 dre = mbu(cv, mdexp(60));
@@ -88,7 +89,7 @@ fil = (u) => {let lpos = u.y; (p) => {if(floor(p.y) != floor(lpos)) {make(mfp1(p
 mfp0 = (px, py, pvx, pvy) => np({c:'*',upd:[v,g,drg,fil,delout]});
 mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd:[delout, mbu(mct(0.5, nop))]});
 
-//chain
+//== chain
 
 
 
@@ -96,7 +97,7 @@ mfp1 = (p) => np({x:p.x, y:p.y, vx:0, vy:0, c:'|', upd:[delout, mbu(mct(0.5, nop
 uparty = (p) => {
 	if(rnd()>3/(ctime - p.t + 1)) {
 		p.t = ctime;
-		let r = mr((rnd()*(0.66)+0.16)*cvs.w, 80*(rnd()*0.3 + 0.7));
+		let r = mr(rndI(0.16, 0.83)*cvs.w, sqrt(80*cvs.h)*rndI(0.3, 1.0));
 		nv.push(r);
 	}
 };
