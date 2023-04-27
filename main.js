@@ -81,7 +81,7 @@ delout = (p) => p.l = p.l && !cpos(p);
 monce = (f) => (p) => {p.l = false; f(p);};
 donce = (f) => {let did=false; return (p) => {if(did) return; did=true; f(p);}};
 waitfor = (t, f) => (p) => {if(ctime - p.t < t) return; t = INF; f(p);};
-freq = (f, g=()=>0, t=0) => (p) => {if(ctime - p.t < t) return; t += g(); f(p);};
+freq = (f, w, t=0) => (p) => {if(ctime - p.t < t) return; t += w; f(p);};
 doif = (cond, f) => (p) => {if(cond(p)) f(p);};
 mch = (h) => (p) => p.y > h;
 mct = (t) => (p) => ctime - p.t >= t;
@@ -100,14 +100,19 @@ np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[]}) => ({
 		'upd': upd
 });
 
-//== default
-/*spark = (p) => np({
-	x:p.x, y:p.y, vy:
-});
-sparkgen = (p) => np({
+//== rockets
+msparkgen = (t) => (p) => np({
 	x:p.x, y:p.y, 
-	upd:[mdt(5), repl()]
-});*/
+	upd:[freq((p) => {
+			nv.push(np({
+				x:p.x, y:p.y, 
+				vx:cos((ctime - p.t)*TAU*3)*30, vy:sin((ctime-p.t)*TAU*3)*30,
+				c:'x', upd:[v, delout, mdt(rndI(0.5, 1.0)), dp]
+			}));
+		}, 1/20), mdt(t)]
+});
+rspark = [v, g, mbu(cv, repl(msparkgen(1))), dp];
+
 dexp = (p, i) => {
 	let th = TAU*rnd();
 	let pva = 25*rndI(0.2, 1.0);
@@ -117,6 +122,8 @@ dexp = (p, i) => {
 		c:'.', upd:[v, drg, delout, mdt(rndI(1., 1.5)), dp]
 	});
 };
+rdupd = [v, g, mbu(cv, createParticles(dexp, 40)), dp];
+
 dcexp = (r, tot) => (p, i) => {
 	let th = TAU*i/tot;
 	return np({
@@ -125,10 +132,8 @@ dcexp = (r, tot) => (p, i) => {
 		c:'.', upd:[v, drg, delout, mdt(rndI(1.,1.5)), dp]
 	});
 };
-rdupd = [v, g, mbu(cv, createParticles(dexp, 40)), dp];
 rdcupd = [v, g, mbu(cv, createParticles(dcexp(30, 30), 30)), dp];
 
-//== strobe
 mpst = (p) => {return np({x:p.x, y:p.y, c:'*', upd:[mdt(0.06), dp]});};
 istexp = (p, i) => {
 	let th = TAU*rnd();
@@ -140,24 +145,16 @@ istexp = (p, i) => {
 };
 rstupd = [v, g, mbu(cv, createParticles(istexp, 60)), dp];
 
+//== 
+rkt = [rdupd, rstupd, rdcupd, rspark];
 mrw = (px, pvy, up) => np({x:px, vy:pvy, c:'.', upd:up});
-rkt = [rdupd, rstupd, rdcupd];
-stndr = (pl) => [g, v, mbu(cav, pl), dp]; 
-
-myrck = () => mrw(
-	rndI(0.16, 0.83)*cvs.w, 
-	sqrt(80*cvs.h)*rndI(0.8, 1.2), 
-	stndr(
-		createParticles(
-			(p, i) => {
-				let th = TAU*rnd();
-				let r = 15*rnd(0.5, 1.0);
-				return np({x:p.x+r*cos(th), y:p.y+r*sin(th), upd:[delout, mbu(mct(rndI(0.2,1.5)), repl(mpst))]});
-			},
-			10
-		)
-	)
-);
+newRocket = () => {
+	nv.push(mrw(
+		rndI(0.16, 0.83)*cvs.w, 
+		sqrt(80*cvs.h)*rndI(0.8, 1.2), 
+		rkt.random()
+	));
+};
 
 brck = () => mrw(
 	cvs.w*0.5,
@@ -176,10 +173,21 @@ brck = () => mrw(
 						c:sparks[i % sparks.length], upd:[v, drg, delout, mdt(rndI(2., 2.5)), dp]
 					});
 				},
-				100
-			)
+				80
+			),
+			(p) => {
+				nv.push(msparkgen(6)({x:p.x - 20, y:p.y}));
+				nv.push(msparkgen(6)({x:p.x + 20, y:p.y}));
+			}
 		)),
-		mds(miniRocket)
+		mds(miniRocket),
+		freq((p) => {
+			nv.push(np({
+				x:p.x+1, y:p.y-5,
+				vx:p.vx + rndI(-10, 10),
+				c:'*', upd:[v, delout,mdt(0.5),dp] 
+			}));
+		}, 1/10)
 	]
 );
 
@@ -187,11 +195,9 @@ brck = () => mrw(
 {
 	let t = 0;
 	uparty = (p) => {
-		if(rnd()>1.8/(ctime-t+1)) {
-			t = ctime;
-			let r = mrw(rndI(0.16, 0.83)*cvs.w, sqrt(80*cvs.h)*rndI(0.8, 1.2), rkt.random());
-			nv.push(r);	 
-		}
+		if(rnd()<1.6/(ctime-t+1)) return;
+		t = ctime;
+		newRocket();
 	}
 }
 
