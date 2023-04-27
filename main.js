@@ -92,15 +92,13 @@ dp = (p) => {if(p.l) cvs.paint(p.x, p.y, p.c);};
 mds = (s) => (p) => {cvs.paints(p.x, p.y, s);};
 repl = (mp) => (p) => {nv.push(mp(p));};
 mpkg = (...f) => (p) => {for(let fi of f) fi(p);};
-mdpexp = (pc, tot) => (p) => {for(let i of range(tot)) nv.push(pc(p, i));};
+createParticles = (c, n) => (p) => {let k = n; while(k-- > 0) nv.push(c(p, k));};
 np = ({x=0,y=0,c=' ',vx=0,vy=0,l=true,t=ctime,upd=[]}) => ({
 		'x':x, 'y':y,
 		'vx':vx, 'vy':vy, 
 		'c':c, 'l':l, 't':t, 
 		'upd': upd
 });
-
-createParticles = (c, n) => (p) => {let k = n; while(k-- > 0) nv.push(c(p, k));};
 
 //== default
 /*spark = (p) => np({
@@ -167,7 +165,7 @@ brck = () => mrw(
 	[
 		v, g,
 		mbu(cav, mpkg(
-			repl((p) => np({x:p.x-25, y:p.y+10, upd:[mdt(5.), (p)=>{cvs.paints(p.x, p.y, message);}]})),
+			repl((p) => np({x:p.x-25, y:p.y+10, upd:[(p)=>{cvs.paints(p.x, p.y, message);}]})),
 			createParticles(
 				(p, i) => {
 					let th = TAU*rnd();
@@ -186,7 +184,6 @@ brck = () => mrw(
 );
 
 //== manager
-
 {
 	let t = 0;
 	uparty = (p) => {
