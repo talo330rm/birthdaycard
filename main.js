@@ -232,7 +232,7 @@ function loop() {
 	let t = time();
 	delta = t - ptime;
 	ptime = t;
-	ctime += delta*0.8;
+	ctime += delta*1.6;
 
 	update();
 	dv.innerHTML = cvs.v.join("");
