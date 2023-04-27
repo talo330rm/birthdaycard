@@ -186,24 +186,17 @@ brck = () => mrw(
 );
 
 //== manager
-uparty = (p) => {
-	if(rnd()>1.8/(ctime - p.t + 1)) {
-		p.t = ctime;
-		let r = mrw(rndI(0.16, 0.83)*cvs.w, sqrt(80*cvs.h)*rndI(0.8, 1.2), rkt.random());
-		nv.push(r);
-	}
-};
 
-uparty = (() => {
-	let t = 0; 
-	return (p) => {
+{
+	let t = 0;
+	uparty = (p) => {
 		if(rnd()>1.8/(ctime-t+1)) {
 			t = ctime;
 			let r = mrw(rndI(0.16, 0.83)*cvs.w, sqrt(80*cvs.h)*rndI(0.8, 1.2), rkt.random());
 			nv.push(r);	 
 		}
 	}
-})();
+}
 
 dparty = (p) => {cvs.clear(' ');};
 
