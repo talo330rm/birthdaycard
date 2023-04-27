@@ -230,9 +230,9 @@ function resume() {
 
 function loop() {
 	let t = time();
-	delta = 0.016;//t - ptime;
+	delta = t - ptime;
 	ptime = t;
-	ctime += delta;
+	ctime += delta*0.8;
 
 	update();
 	dv.innerHTML = cvs.v.join("");
